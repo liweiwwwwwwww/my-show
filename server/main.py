@@ -322,4 +322,9 @@ def admin_page():
     return FileResponse(os.path.join(os.path.dirname(__file__), "..", "admin.html"))
 
 
+@app.get("/admin.html")
+def admin_page_html():
+    return FileResponse(os.path.join(os.path.dirname(__file__), "..", "admin.html"))
+
+
 app.mount("/static", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "..")), name="static")

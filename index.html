@@ -313,7 +313,47 @@
   // ===== 动态加载数据 =====
   function esc(s){ return String(s||"").replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
 
-  fetch(API + "/profile").then(r=>r.json()).then(function(p){
+  // ===== 写死数据（GitHub Pages静态部署用） =====
+  var STATIC = {
+    profile: {
+      name: "李维", role: "物联网工程 · 嵌入式开发",
+      lead: "从51单片机点灯到ESP32组网，喜欢把想法焊成实物。",
+      email: "liwei@example.com", github: "https://github.com/liweiwwwwwwww",
+      about: "我是一名物联网工程专业的大三学生，平时泡在实验室和面包板之间。从51单片机点灯开始，慢慢玩到ESP32、传感器组网和简单的上位机。",
+      stats: [{num:"3+",label:"年硬件经验"},{num:"12",label:"项技能"},{num:"4",label:"个项目"},{num:"100%",label:"热情"}]
+    },
+    skills: {
+      "嵌入式 / 硬件": [
+        {name:"C / 51 单片机",level:85},{name:"ESP32 / Arduino",level:80},
+        {name:"传感器 / 电路焊接",level:75},{name:"立创EDA / 原理图",level:55}
+      ],
+      "软件开发": [
+        {name:"Python",level:72},{name:"HTML / CSS / JS",level:68},
+        {name:"Java / SpringBoot",level:50},{name:"Vue3",level:45}
+      ],
+      "工具 / 其他": [
+        {name:"Git / GitHub",level:70},{name:"Keil / VS Code",level:82},
+        {name:"Linux 基础命令",level:55},{name:"AI 辅助开发",level:85}
+      ]
+    },
+    projects: [
+      {year:"2025",title:"基于 ESP32-CAM 的远程监控",description:"用 ESP32-CAM 搭建的网络摄像头，实现网页端实时查看与移动侦测，负责硬件接线与固件调试。",tags:["ESP32","摄像头","IoT"]},
+      {year:"2024",title:"TI 杯电子设计竞赛作品",description:"信号类赛题，基于单片机实现信号采集、运放调理与输出，完成从原理图到实物联调的全流程。",tags:["C","单片机","运放电路"]},
+      {year:"2025",title:"个人作品集网站",description:"就是你现在看到的这个站。深色星空主题，前后端分离，带留言板和管理后台。",tags:["FastAPI","Vue3","Canvas"]},
+      {year:"2025",title:"大学生创新训练项目",description:"在研项目，负责传感器节点的固件开发与数据上报，配套简单的上位机展示页面。",tags:["大创","传感器","嵌入式"]}
+    ],
+    blogs: [
+      {date:"2025-10-20",title:"第一次用 AI 从 0 做一个网站",summary:"从写 PRD 到部署上线，记录我如何把一句想法变成一个能访问的网页。"},
+      {date:"2025-09-12",title:"ESP32 上手踩坑笔记",summary:"供电、烧录、串口乱码……把第一次玩 ESP32 踩过的坑整理成一份清单。"},
+      {date:"2025-08-03",title:"电赛备赛：我是怎么调 bug 的",summary:"从分不清前后端，到学会看状态码和报错信息，一点拙见。"}
+    ],
+    messages: [
+      {nickname:"才",content:"二分",created_at:"2026-10-29"},
+      {nickname:"李维",content:"哇",created_at:"2026-10-29"}
+    ]
+  };
+
+  function renderProfile(p){
     document.getElementById("heroName").textContent = p.name;
     document.getElementById("heroRole").textContent = p.role;
     document.getElementById("heroLead").textContent = p.lead;
@@ -321,9 +361,8 @@
     document.getElementById("gh").href = p.github || "#";
     document.getElementById("aboutTxt").innerHTML = "<p>" + esc(p.about).replace(/\n/g,"</p><p>") + "</p>";
     document.getElementById("heroStats").innerHTML = p.stats.map(function(s){ return '<div class="stat"><b>'+esc(s.num)+'</b><span>'+esc(s.label)+'</span></div>'; }).join("");
-  });
-
-  fetch(API + "/skills").then(r=>r.json()).then(function(cats){
+  }
+  function renderSkills(cats){
     var icons = {"嵌入式 / 硬件":'<svg viewBox="0 0 24 24" fill="none" stroke-width="2" style="width:20px;height:20px;stroke:var(--accent)"><path d="M13 2L3 14h7l-1 8 10-12h-7z" stroke-linejoin="round"/></svg>',
       "软件开发":'<svg viewBox="0 0 24 24" fill="none" stroke-width="2" style="width:20px;height:20px;stroke:var(--accent)"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3" stroke-linecap="round"/></svg>',
       "工具 / 其他":'<svg viewBox="0 0 24 24" fill="none" stroke-width="2" style="width:20px;height:20px;stroke:var(--accent)"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14 0 18M12 3c-3 3.5-3 14 0 18" stroke-linecap="round"/></svg>'};
@@ -335,42 +374,53 @@
     });
     document.getElementById("skillCats").innerHTML = html;
     animateBars();
-  });
-
-  fetch(API + "/projects").then(r=>r.json()).then(function(list){
+  }
+  function renderProjects(list){
     document.getElementById("projGrid").innerHTML = list.map(function(p){
       return '<div class="proj"><div class="year">'+esc(p.year)+'</div><h3>'+esc(p.title)+'</h3><p>'+esc(p.description)+'</p><div class="tags">'+p.tags.map(function(t){return "<span>"+esc(t)+"</span>";}).join("")+'</div></div>';
     }).join("");
-  });
-
-  fetch(API + "/blogs").then(r=>r.json()).then(function(list){
+  }
+  function renderBlogs(list){
     document.getElementById("blogList").innerHTML = list.map(function(b){
       return '<div class="post"><div class="date">'+esc(b.date)+'</div><h3>'+esc(b.title)+'</h3><p>'+esc(b.summary)+'</p></div>';
     }).join("");
-  });
-
-  function loadMsgs(){
-    fetch(API + "/messages").then(r=>r.json()).then(function(list){
-      document.getElementById("msgList").innerHTML = list.length
-        ? list.map(function(m){ return '<div class="msg-item"><div class="m-head"><span>'+esc(m.nickname)+'</span><span class="m-time">'+esc(m.created_at)+'</span></div><div class="m-body">'+esc(m.content)+'</div></div>'; }).join("")
-        : '<p style="text-align:center;color:var(--muted);font-size:14px">还没有留言，来抢沙发～</p>';
-    });
   }
-  loadMsgs();
-  // 每5秒自动刷新留言列表（后台点"通过"后前台自动出现，不用手动F5）
-  setInterval(loadMsgs, 5000);
+  function renderMsgs(list){
+    document.getElementById("msgList").innerHTML = list.length
+      ? list.map(function(m){ return '<div class="msg-item"><div class="m-head"><span>'+esc(m.nickname)+'</span><span class="m-time">'+esc(m.created_at)+'</span></div><div class="m-body">'+esc(m.content)+'</div></div>'; }).join("")
+      : '<p style="text-align:center;color:var(--muted);font-size:14px">还没有留言，来抢沙发～</p>';
+  }
 
-  window.submitMsg = function(e){
-    e.preventDefault();
-    var body = {nickname: document.getElementById("mNickname").value, contact: document.getElementById("mContact").value, content: document.getElementById("mContent").value};
-    fetch(API + "/messages", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body)})
-      .then(r=>r.json()).then(function(res){
-        showToast(res.msg || "提交成功");
-        document.getElementById("msgForm").reset();
-        loadMsgs();
-      });
-    return false;
-  };
+  // 本地/局域网用API，GitHub Pages用写死数据
+  var useAPI = (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.hostname === "10.92.78.39");
+  if (useAPI) {
+    fetch(API + "/profile").then(r=>r.json()).then(renderProfile);
+    fetch(API + "/skills").then(r=>r.json()).then(renderSkills);
+    fetch(API + "/projects").then(r=>r.json()).then(renderProjects);
+    fetch(API + "/blogs").then(r=>r.json()).then(renderBlogs);
+    function loadMsgs(){ fetch(API + "/messages").then(r=>r.json()).then(renderMsgs); }
+    loadMsgs(); setInterval(loadMsgs, 5000);
+    window.submitMsg = function(e){
+      e.preventDefault();
+      var body = {nickname: document.getElementById("mNickname").value, contact: document.getElementById("mContact").value, content: document.getElementById("mContent").value};
+      fetch(API + "/messages", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body)})
+        .then(r=>r.json()).then(function(res){
+          showToast(res.msg || "提交成功");
+          document.getElementById("msgForm").reset(); loadMsgs();
+        });
+      return false;
+    };
+  } else {
+    // GitHub Pages静态模式
+    renderProfile(STATIC.profile);
+    renderSkills(STATIC.skills);
+    renderProjects(STATIC.projects);
+    renderBlogs(STATIC.blogs);
+    renderMsgs(STATIC.messages);
+    window.submitMsg = function(e){
+      e.preventDefault(); showToast("公网演示模式，留言请访问局域网地址"); return false;
+    };
+  }
 })();
 </script>
 </body>

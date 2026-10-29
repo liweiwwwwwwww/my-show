@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: liwei-portfolio
+    runtime: python
+    buildCommand: pip install -r server/requirements.txt
+    startCommand: cd server && uvicorn main:app --host 0.0.0.0 --port $PORT
+    plan: free
